@@ -82,6 +82,8 @@ jobs:
           set -euo pipefail
           gradle_file="nativephp/android/app/build.gradle.kts"
           sed -i \
+            -e 's/REPLACE_APP_ID/com.soebb.madelinehttps.test/g' \
+            -e 's/REPLACE_DEBUG_SYMBOLS/NONE/g' \
             -e 's/REPLACE_COMPILE_SDK/36/g' \
             -e 's/REPLACE_MIN_SDK/26/g' \
             -e 's/REPLACE_TARGET_SDK/36/g' \
