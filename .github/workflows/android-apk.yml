@@ -20,7 +20,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          tools: composer, laravel
           extensions: curl, dom, fileinfo, filter, gd, gmp, iconv, mbstring, openssl, sockets, xml, zlib, zip
           coverage: none
 
@@ -33,9 +32,15 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Laravel installer
+        run: |
+          composer global require laravel/installer
+          echo "$HOME/.composer/vendor/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.config/composer/vendor/bin" >> "$GITHUB_PATH"
+
       - name: Create NativePHP starter app
         run: |
-          laravel new nativephp-build --using=nativephp/mobile-starter --no-node --no-boost --force --no-interaction
+          laravel new nativephp-build --using=nativephp/mobile-starter --stability=dev --no-node --no-boost --force --no-interaction
           cp nativephp-app/app/NativeComponents/Home.php nativephp-build/app/NativeComponents/Home.php
           mkdir -p nativephp-build/app/Services
           cp nativephp-app/app/Services/MadelineTelegram.php nativephp-build/app/Services/MadelineTelegram.php
