@@ -43,7 +43,7 @@ jobs:
 
       - name: Create NativePHP starter app
         run: |
-          laravel new nativephp-build --using=nativephp/mobile-starter --stability=dev --no-node --no-boost --force --no-interaction
+          laravel new nativephp-build --using=nativephp/mobile-starter --dev --no-node --no-boost --force --no-interaction
           cp nativephp-app/app/NativeComponents/Home.php nativephp-build/app/NativeComponents/Home.php
           mkdir -p nativephp-build/app/Services
           cp nativephp-app/app/Services/MadelineTelegram.php nativephp-build/app/Services/MadelineTelegram.php
