@@ -1,0 +1,81 @@
+name: Build MadelineProto HTTPS Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout project overlay
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer, laravel
+          extensions: curl, dom, fileinfo, filter, gd, gmp, iconv, mbstring, openssl, sockets, xml, zlib, zip
+          coverage: none
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create NativePHP starter app
+        run: |
+          laravel new nativephp-build --using=nativephp/mobile-starter --no-node --no-boost --force --no-interaction
+          cp nativephp-app/app/NativeComponents/Home.php nativephp-build/app/NativeComponents/Home.php
+          mkdir -p nativephp-build/app/Services
+          cp nativephp-app/app/Services/MadelineTelegram.php nativephp-build/app/Services/MadelineTelegram.php
+          cp nativephp-app/resources/views/native/home.blade.php nativephp-build/resources/views/native/home.blade.php
+
+      - name: Install MadelineProto and document picker
+        working-directory: nativephp-build
+        run: |
+          composer require danog/madelineproto:^8.0 smronju/nativephp-document-picker --no-interaction
+          php artisan native:plugin:register smronju/nativephp-document-picker
+          php artisan native:plugin:list
+
+      - name: Configure Android app
+        working-directory: nativephp-build
+        run: |
+          php artisan key:generate --force
+          cat >> .env <<'EOF'
+          NATIVEPHP_APP_ID=com.soebb.madelinehttps.test
+          NATIVEPHP_APP_VERSION=DEBUG
+          NATIVEPHP_APP_VERSION_CODE=1
+          NATIVEPHP_ANDROID_MIN_SDK=26
+          NATIVEPHP_ANDROID_COMPILE_SDK=36
+          NATIVEPHP_ANDROID_TARGET_SDK=36
+          EOF
+
+      - name: Install NativePHP Android shell
+        working-directory: nativephp-build
+        run: |
+          yes n | php artisan native:install android
+
+      - name: Build debug APK
+        working-directory: nativephp-build/nativephp/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MadelineProto-HTTPS-Test-debug
+          path: nativephp-build/nativephp/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14

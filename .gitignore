@@ -1,0 +1,11 @@
+/nativephp-build/
+/vendor/
+/node_modules/
+/.env
+/.phpunit.cache/
+/storage/*.key
+*.madeline
+*.madeline.lock
+*.madeline.lightState
+*.session
+*.log
