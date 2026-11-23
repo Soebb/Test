@@ -75,10 +75,10 @@ jobs:
           yes n | php artisan native:install android
 
       - name: Build debug APK
-        working-directory: nativephp-build/nativephp/android
+        working-directory: nativephp-build
         run: |
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          php artisan native:run android --build=debug --no-tty || test -s nativephp/android/app/build/outputs/apk/debug/app-debug.apk
+          test -s nativephp/android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
