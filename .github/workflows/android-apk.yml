@@ -72,24 +72,19 @@ jobs:
       - name: Install NativePHP Android shell
         working-directory: nativephp-build
         run: |
-          yes n | php artisan native:install android
+          yes n | php artisan native:install android --no-tty || test -d nativephp/android
 
-      - name: Build debug APK without emulator
+      - name: Build debug APK directly with Gradle
         working-directory: nativephp-build
         shell: bash
         run: |
-          set +e
-          php artisan native:run android --build=debug --no-tty
-          native_exit=$?
-          set -e
-
-          apk="nativephp/android/app/build/outputs/apk/debug/app-debug.apk"
-          if [ ! -s "$apk" ]; then
-            echo "::error::NativePHP did not produce the debug APK (exit code: $native_exit)."
-            exit 1
-          fi
-
-          echo "APK successfully generated at $apk"
+          set -euo pipefail
+          cd nativephp/android
+          chmod +x ./gradlew
+          ./gradlew --no-daemon assembleDebug
+          apk="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$apk"
+          echo "APK successfully generated:"
           ls -lh "$apk"
 
       - name: Upload debug APK
