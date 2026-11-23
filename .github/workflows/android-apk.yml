@@ -72,7 +72,8 @@ jobs:
       - name: Install NativePHP Android shell
         working-directory: nativephp-build
         run: |
-          yes n | php artisan native:install android --no-tty || test -d nativephp/android
+          printf 'n\n' | php artisan native:install android --force
+          test -f nativephp/android/app/build.gradle.kts
 
       - name: Build debug APK directly with Gradle
         working-directory: nativephp-build
