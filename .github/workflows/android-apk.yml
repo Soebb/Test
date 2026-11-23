@@ -1,5 +1,5 @@
 name: Build MadelineProto HTTPS Android APK
-# Uses Android SDK packages explicitly to avoid the removed legacy tools package.
+# Build the APK on the GitHub runner without booting an Android emulator.
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: "platform-tools platforms;android-36 build-tools;36.0.0 emulator system-images;android-36;google_apis;x86_64"
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0"
 
       - name: Install Laravel installer
         run: |
@@ -74,17 +74,23 @@ jobs:
         run: |
           yes n | php artisan native:install android
 
-      - name: Build debug APK on Android emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 36
-          arch: x86_64
-          target: google_apis
-          disable-animations: true
-          script: |
-            cd nativephp-build
-            timeout 300s php artisan native:run android --build=debug --no-tty || test -s nativephp/android/app/build/outputs/apk/debug/app-debug.apk
-            test -s nativephp/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Build debug APK without emulator
+        working-directory: nativephp-build
+        shell: bash
+        run: |
+          set +e
+          php artisan native:run android --build=debug --no-tty
+          native_exit=$?
+          set -e
+
+          apk="nativephp/android/app/build/outputs/apk/debug/app-debug.apk"
+          if [ ! -s "$apk" ]; then
+            echo "::error::NativePHP did not produce the debug APK (exit code: $native_exit)."
+            exit 1
+          fi
+
+          echo "APK successfully generated at $apk"
+          ls -lh "$apk"
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
