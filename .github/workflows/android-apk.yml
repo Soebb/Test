@@ -1,4 +1,5 @@
 name: Build MadelineProto HTTPS Android APK
+# Uses Android SDK packages explicitly to avoid the removed legacy tools package.
 
 on:
   push:
