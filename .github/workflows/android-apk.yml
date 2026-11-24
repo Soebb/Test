@@ -99,23 +99,26 @@ jobs:
           echo "Android Gradle configuration:"
           sed -n '1,28p' "$gradle_file"
 
-      - name: Build debug APK directly with Gradle
+      - name: Prepare and build APK with NativePHP
         working-directory: nativephp-build
         shell: bash
         run: |
           set -euo pipefail
-          cd nativephp/android
-          chmod +x ./gradlew
-          ./gradlew --no-daemon assembleDebug
-          apk="app/build/outputs/apk/debug/app-debug.apk"
+          gradle_file="nativephp/android/app/build.gradle.kts"
+          # This CI build has no Android device attached. Use NativePHP's release
+          # build path so its Laravel bundle and plugin compilation steps run,
+          # but sign the test APK with the standard debug key so it is installable.
+          sed -i '/^        release {$/a\            signingConfig = signingConfigs.getByName("debug")' "$gradle_file"
+          php artisan native:run android --build=release --no-tty
+          apk="nativephp/android/app/build/outputs/apk/release/app-release.apk"
           test -s "$apk"
-          echo "APK successfully generated:"
+          echo "NativePHP APK successfully generated:"
           ls -lh "$apk"
 
-      - name: Upload debug APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: MadelineProto-HTTPS-Test-debug
-          path: nativephp-build/nativephp/android/app/build/outputs/apk/debug/app-debug.apk
+          name: MadelineProto-HTTPS-Test
+          path: nativephp-build/nativephp/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
