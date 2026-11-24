@@ -30,7 +30,7 @@
             @if ($selectedName !== '')
                 <native:text class="text-sm text-theme-on-surface-variant">Selected: {{ $selectedName }}</native:text>
             @endif
-            <native:button class="w-full" :disabled="{{ ! $loggedIn || $uploading }}" @press="uploadFile">Upload file</native:button>
+            <native:button class="w-full" :disabled="! $loggedIn || $uploading" @press="uploadFile">Upload file</native:button>
             <native:text class="text-sm text-theme-on-surface-variant">Progress: {{ $uploadProgress }}%</native:text>
         </native:column>
 
