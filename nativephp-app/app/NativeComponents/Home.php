@@ -26,6 +26,7 @@ class Home extends NativeComponent
     public int $uploadProgress = 0;
     public bool $codeRequested = false;
     public bool $loggedIn = false;
+    public bool $sessionAvailable = false;
     public bool $uploading = false;
 
     public function mount(): void
@@ -48,11 +49,35 @@ class Home extends NativeComponent
         }
 
         if ($this->apiId !== '' && $this->apiHash !== '') {
-            $this->loggedIn = app(MadelineTelegram::class)->isAuthorized((int) $this->apiId, $this->apiHash);
-            if ($this->loggedIn) {
-                $this->status = 'Telegram session restored.';
-                $this->log('Existing MadelineProto session restored.');
+            $sessionPath = storage_path('app/private/madeline/session.madeline');
+            $this->sessionAvailable = is_file($sessionPath);
+
+            if ($this->sessionAvailable) {
+                $this->status = 'A saved Telegram session was found. Check the connection when ready.';
+                $this->log('Saved MadelineProto session detected; network verification deferred.');
             }
+        }
+    }
+
+    public function checkConnection(): void
+    {
+        try {
+            $this->validateCredentials();
+            $this->status = 'Checking saved Telegram session...';
+            $this->loggedIn = app(MadelineTelegram::class)->isAuthorized((int) $this->apiId, $this->apiHash);
+            $this->sessionAvailable = $this->loggedIn;
+
+            if ($this->loggedIn) {
+                $this->status = 'Telegram connection verified.';
+                $this->log('Saved Telegram session is valid.');
+            } else {
+                $this->status = 'No active Telegram session was found. Request a new login code.';
+                $this->log('Saved Telegram session could not be authorized.');
+            }
+        } catch (Throwable $exception) {
+            $this->loggedIn = false;
+            $this->status = 'Connection check failed: '.$exception->getMessage();
+            $this->log('Connection check failed: '.$exception->getMessage());
         }
     }
 
@@ -102,6 +127,7 @@ class Home extends NativeComponent
             }
 
             $this->loggedIn = true;
+            $this->sessionAvailable = true;
             $this->codeRequested = false;
             $this->code = '';
             $this->saveSettings();
