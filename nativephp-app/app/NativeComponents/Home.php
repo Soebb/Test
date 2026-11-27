@@ -229,7 +229,7 @@ class Home extends NativeComponent
         }
 
         if (! preg_match('/^\\+[1-9][0-9]{7,14}$/', $phone)) {
-            throw new \\RuntimeException('Invalid phone number. Use international format, for example +989123456789.');
+            throw new \RuntimeException('Invalid phone number. Use international format, for example +989123456789.');
         }
 
         return $phone;
@@ -238,7 +238,7 @@ class Home extends NativeComponent
     private function validateCredentials(): void
     {
         if (! ctype_digit($this->apiId) || (int) $this->apiId <= 0 || trim($this->apiHash) === '') {
-            throw new \\RuntimeException('Enter a valid Telegram API ID and API Hash.');
+            throw new \RuntimeException('Enter a valid Telegram API ID and API Hash.');
         }
     }
 
