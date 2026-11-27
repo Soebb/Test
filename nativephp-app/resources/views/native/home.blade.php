@@ -12,6 +12,9 @@
             <native:outlined-text-input label="Phone number" placeholder="+12345678900" keyboard="phone" native:model.blur="phone" />
 
             @if (! $loggedIn)
+                @if ($sessionAvailable)
+                    <native:button class="w-full" @press="checkConnection">Check saved Telegram session</native:button>
+                @endif
                 <native:button class="w-full" @press="requestCode">Request login code</native:button>
                 @if ($codeRequested)
                     <native:outlined-text-input label="Telegram login code" keyboard="number" native:model.blur="code" />
