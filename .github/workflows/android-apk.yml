@@ -62,8 +62,8 @@ jobs:
           php artisan key:generate --force
           cat >> .env <<'EOF'
           NATIVEPHP_APP_ID=com.soebb.madelinehttps.test
-          NATIVEPHP_APP_VERSION=DEBUG
-          NATIVEPHP_APP_VERSION_CODE=1
+          NATIVEPHP_APP_VERSION=1.0.0
+          NATIVEPHP_APP_VERSION_CODE=2
           NATIVEPHP_ANDROID_MIN_SDK=26
           NATIVEPHP_ANDROID_COMPILE_SDK=36
           NATIVEPHP_ANDROID_TARGET_SDK=36
@@ -74,6 +74,26 @@ jobs:
         run: |
           printf 'n\n' | php artisan native:install android --force
           test -f nativephp/android/app/build.gradle.kts
+
+      - name: Force left-to-right layout for the English interface
+        working-directory: nativephp-build
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          manifest = Path("nativephp/android/app/src/main/AndroidManifest.xml")
+          content = manifest.read_text()
+          match = re.search(r"<application\\b[^>]*>", content, flags=re.S)
+          if not match:
+              raise SystemExit("Android application manifest tag was not found.")
+          tag = match.group(0)
+          if re.search(r"android:supportsRtl\\s*=", tag):
+              tag = re.sub(r'android:supportsRtl\\s*=\\s*"[^"]+"', 'android:supportsRtl="false"', tag)
+          else:
+              tag = tag[:-1] + ' android:supportsRtl="false">'
+          manifest.write_text(content[:match.start()] + tag + content[match.end():])
+          print("Android app layout direction forced to LTR.")
 
       - name: Resolve NativePHP Gradle template placeholders
         working-directory: nativephp-build
