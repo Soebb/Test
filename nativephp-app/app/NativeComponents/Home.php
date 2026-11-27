@@ -222,13 +222,13 @@ class Home extends NativeComponent
             '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
         ]));
 
-        $phone = preg_replace('/[\\s().-]+/u', '', $phone) ?? $phone;
+        $phone = preg_replace('/[\s().-]+/u', '', $phone) ?? $phone;
 
         if (str_starts_with($phone, '00')) {
             $phone = '+'.substr($phone, 2);
         }
 
-        if (! preg_match('/^\\+[1-9][0-9]{7,14}$/', $phone)) {
+        if (! preg_match('/^\+[1-9][0-9]{7,14}$/', $phone)) {
             throw new \RuntimeException('Invalid phone number. Use international format, for example +989123456789.');
         }
 
