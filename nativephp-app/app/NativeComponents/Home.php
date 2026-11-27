@@ -83,11 +83,11 @@ class Home extends NativeComponent
 
     public function requestCode(): void
     {
+        $this->codeRequested = false;
+
         try {
             $this->validateCredentials();
-            if (trim($this->phone) === '') {
-                throw new \RuntimeException('Enter your phone number in international format.');
-            }
+            $this->phone = $this->normalizePhoneNumber($this->phone);
 
             $this->saveSettings();
             app(MadelineTelegram::class)->requestCode((int) $this->apiId, $this->apiHash, $this->phone);
@@ -213,10 +213,32 @@ class Home extends NativeComponent
         }
     }
 
+    private function normalizePhoneNumber(string $phone): string
+    {
+        $phone = trim(strtr($phone, [
+            '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
+            '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
+            '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
+            '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
+        ]));
+
+        $phone = preg_replace('/[\\s().-]+/u', '', $phone) ?? $phone;
+
+        if (str_starts_with($phone, '00')) {
+            $phone = '+'.substr($phone, 2);
+        }
+
+        if (! preg_match('/^\\+[1-9][0-9]{7,14}$/', $phone)) {
+            throw new \\RuntimeException('Invalid phone number. Use international format, for example +989123456789.');
+        }
+
+        return $phone;
+    }
+
     private function validateCredentials(): void
     {
         if (! ctype_digit($this->apiId) || (int) $this->apiId <= 0 || trim($this->apiHash) === '') {
-            throw new \RuntimeException('Enter a valid Telegram API ID and API Hash.');
+            throw new \\RuntimeException('Enter a valid Telegram API ID and API Hash.');
         }
     }
 
