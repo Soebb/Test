@@ -60,7 +60,7 @@ jobs:
         working-directory: nativephp-build
         run: |
           php artisan key:generate --force
-          cat >> .env <<'EOF'
+          cat >> .env <<EOF
           NATIVEPHP_APP_ID=com.soebb.madelinehttps.test
           NATIVEPHP_APP_VERSION=1.0.0
           NATIVEPHP_APP_VERSION_CODE=${GITHUB_RUN_NUMBER}
