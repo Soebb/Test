@@ -9,7 +9,7 @@
             <native:text class="text-lg font-semibold text-theme-on-surface">Telegram login</native:text>
             <native:outlined-text-input label="API ID" keyboard="number" native:model.blur="apiId" />
             <native:outlined-text-input label="API Hash" secure native:model.blur="apiHash" />
-            <native:outlined-text-input label="Phone number" placeholder="+12345678900" keyboard="phone" native:model.blur="phone" />
+            <native:outlined-text-input label="Phone number" placeholder="+12345678900" keyboard="text" native:model.blur="phone" />
 
             @if (! $loggedIn)
                 @if ($sessionAvailable)
