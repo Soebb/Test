@@ -35,7 +35,7 @@ class Home extends NativeComponent
         $this->apiHash = (string) ($saved['api_hash'] ?? '');
         $this->phone = (string) ($saved['phone'] ?? '');
 
-        $requiredExtensions = ['mbstring', 'xml', 'json', 'fileinfo', 'gmp', 'openssl', 'iconv', 'gd'];
+        $requiredExtensions = ['xml', 'dom', 'fileinfo', 'json', 'filter', 'hash', 'zlib'];
         $missingExtensions = array_values(array_filter(
             $requiredExtensions,
             static fn (string $extension): bool => ! extension_loaded($extension)
