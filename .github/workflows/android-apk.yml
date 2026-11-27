@@ -84,12 +84,12 @@ jobs:
 
           manifest = Path("nativephp/android/app/src/main/AndroidManifest.xml")
           content = manifest.read_text()
-          match = re.search(r"<application\\b[^>]*>", content, flags=re.S)
+          match = re.search(r"<application\b[^>]*>", content, flags=re.S)
           if not match:
               raise SystemExit("Android application manifest tag was not found.")
           tag = match.group(0)
-          if re.search(r"android:supportsRtl\\s*=", tag):
-              tag = re.sub(r'android:supportsRtl\\s*=\\s*"[^"]+"', 'android:supportsRtl="false"', tag)
+          if re.search(r"android:supportsRtl\s*=", tag):
+              tag = re.sub(r'android:supportsRtl\s*=\s*"[^"]+"', 'android:supportsRtl="false"', tag)
           else:
               tag = tag[:-1] + ' android:supportsRtl="false">'
           manifest.write_text(content[:match.start()] + tag + content[match.end():])
