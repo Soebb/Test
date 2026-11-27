@@ -88,6 +88,7 @@ class Home extends NativeComponent
         try {
             $this->validateCredentials();
             $this->phone = $this->normalizePhoneNumber($this->phone);
+            $this->log('Phone format accepted (international format, '.strlen($this->phone).' characters).');
 
             $this->saveSettings();
             app(MadelineTelegram::class)->requestCode((int) $this->apiId, $this->apiHash, $this->phone);
