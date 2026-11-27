@@ -63,7 +63,7 @@ jobs:
           cat >> .env <<'EOF'
           NATIVEPHP_APP_ID=com.soebb.madelinehttps.test
           NATIVEPHP_APP_VERSION=1.0.0
-          NATIVEPHP_APP_VERSION_CODE=2
+          NATIVEPHP_APP_VERSION_CODE=${GITHUB_RUN_NUMBER}
           NATIVEPHP_RUNTIME_MODE=persistent
           NATIVEPHP_ANDROID_MIN_SDK=26
           NATIVEPHP_ANDROID_COMPILE_SDK=36
@@ -108,7 +108,7 @@ jobs:
             -e 's/REPLACE_COMPILE_SDK/36/g' \
             -e 's/REPLACE_MIN_SDK/26/g' \
             -e 's/REPLACE_TARGET_SDK/36/g' \
-            -e 's/REPLACEMECODE/2/g' \
+            -e "s/REPLACEMECODE/${GITHUB_RUN_NUMBER}/g" \
             -e 's/REPLACE_MINIFY_ENABLED/false/g' \
             -e 's/REPLACE_SHRINK_RESOURCES/false/g' \
             "$gradle_file"
