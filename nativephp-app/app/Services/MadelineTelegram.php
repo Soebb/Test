@@ -59,6 +59,11 @@ class MadelineTelegram
             throw new RuntimeException('Could not switch to MadelineProto writable runtime directory.');
         }
 
+        // Enable the guarded in-process mode applied to MadelineProto during the Android build.
+        if (! defined('NATIVEPHP_EMBEDDED_RUNTIME')) {
+            define('NATIVEPHP_EMBEDDED_RUNTIME', true);
+        }
+
         try {
             return new API($this->sessionPath(), $settings);
         } finally {
