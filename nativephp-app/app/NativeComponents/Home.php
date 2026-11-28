@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
+use Native\Mobile\Facades\Share;
 use Smronju\NativephpDocumentPicker\Events\DocumentPicked;
 use Smronju\NativephpDocumentPicker\Facades\DocumentPicker;
 use Throwable;
@@ -137,6 +138,28 @@ class Home extends NativeComponent
         } catch (Throwable $exception) {
             $this->status = $exception->getMessage();
             $this->log('Code verification failed: '.$exception->getMessage());
+        }
+    }
+
+    public function exportMadelineLog(): void
+    {
+        $logPath = storage_path('app/private/madeline/MadelineProto.log');
+
+        if (! is_file($logPath) || ! is_readable($logPath) || filesize($logPath) === 0) {
+            $this->status = 'MadelineProto log is not available yet. Try requesting the login code first.';
+            return;
+        }
+
+        try {
+            Share::file(
+                'MadelineProto.log',
+                'MadelineProto diagnostic log',
+                $logPath
+            );
+            $this->status = 'Choose an app to save or share MadelineProto.log.';
+        } catch (Throwable $exception) {
+            $this->status = 'Could not open the share sheet: '.$exception->getMessage();
+            $this->log('Log export failed: '.$exception->getMessage());
         }
     }
 
