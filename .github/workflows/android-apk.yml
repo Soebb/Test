@@ -48,6 +48,8 @@ jobs:
           mkdir -p nativephp-build/app/Services
           cp nativephp-app/app/Services/MadelineTelegram.php nativephp-build/app/Services/MadelineTelegram.php
           cp nativephp-app/resources/views/native/home.blade.php nativephp-build/resources/views/native/home.blade.php
+          mkdir -p nativephp-build/scripts
+          cp nativephp-app/scripts/patch-madeline-nativephp.php nativephp-build/scripts/patch-madeline-nativephp.php
 
       - name: Align NativePHP runtime and UI versions
         working-directory: nativephp-build
@@ -62,6 +64,7 @@ jobs:
         working-directory: nativephp-build
         run: |
           composer require danog/madelineproto:^8.0 smronju/nativephp-document-picker nativephp/mobile-share --no-interaction
+          php scripts/patch-madeline-nativephp.php
           php artisan native:plugin:register smronju/nativephp-document-picker
           php artisan native:plugin:register nativephp/mobile-share
           php artisan native:plugin:list
