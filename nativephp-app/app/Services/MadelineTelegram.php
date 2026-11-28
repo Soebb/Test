@@ -7,6 +7,7 @@ use danog\MadelineProto\LocalFile;
 use danog\MadelineProto\Logger;
 use danog\MadelineProto\Settings;
 use danog\MadelineProto\WrappedFuture;
+use danog\MadelineProto\Stream\MTProtoTransport\FullStream;
 use danog\MadelineProto\Stream\MTProtoTransport\HttpsStream;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
@@ -21,7 +22,7 @@ class MadelineTelegram
         return $directory.DIRECTORY_SEPARATOR.'session.madeline';
     }
 
-    public function makeClient(int $apiId, string $apiHash): API
+    public function makeClient(int $apiId, string $apiHash, bool $httpsTransport = false): API
     {
         if ($apiId <= 0 || trim($apiHash) === '') {
             throw new RuntimeException('Enter a valid Telegram API ID and API Hash.');
@@ -31,10 +32,11 @@ class MadelineTelegram
         $settings->getAppInfo()
             ->setApiId($apiId)
             ->setApiHash(trim($apiHash));
+        // Login and session checks use Telegram's native TCP transport.
+        // MadelineProto's built-in DC IP table avoids DNS lookups for login.
+        // File uploads explicitly opt into HTTPS.
         $settings->getConnection()
-            ->setProtocol(HttpsStream::class)
-            // Android networks may fail MadelineProto's built-in DoH lookup.
-            // Use the device's configured DNS resolver for this HTTPS test.
+            ->setProtocol($httpsTransport ? HttpsStream::class : FullStream::class)
             ->setUseDoH(false);
 
         // NativePHP's Android process may have a read-only working directory.
@@ -63,7 +65,7 @@ class MadelineTelegram
 
     public function requestCode(int $apiId, string $apiHash, string $phone): void
     {
-        $api = $this->makeClient($apiId, $apiHash);
+        $api = $this->makeClient($apiId, $apiHash, false);
         $this->awaitIfNeeded($api->phoneLogin(trim($phone)));
     }
 
