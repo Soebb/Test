@@ -3,7 +3,7 @@ name: Build MadelineProto HTTPS Android APK
 
 on:
   push:
-    branches: [main, feature/export-madeline-log]
+    branches: [main, feature/export-madeline-log, fix/nativephp-madeline-runtime]
   workflow_dispatch:
 
 permissions:
