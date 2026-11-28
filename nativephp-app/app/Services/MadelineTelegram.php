@@ -50,7 +50,7 @@ class MadelineTelegram
      */
     private function awaitIfNeeded(mixed $result): mixed
     {
-        return $result instanceof \\Amp\\Future ? $result->await() : $result;
+        return $result instanceof \Amp\Future ? $result->await() : $result;
     }
 
     public function requestCode(int $apiId, string $apiHash, string $phone): void
