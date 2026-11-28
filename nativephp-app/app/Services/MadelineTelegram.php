@@ -94,7 +94,7 @@ class MadelineTelegram
 
     public function completeCode(int $apiId, string $apiHash, string $code): array
     {
-        $api = $this->makeClient($apiId, $apiHash);
+        $api = $this->makeClient($apiId, $apiHash, false);
         $authorization = $this->awaitIfNeeded($api->completePhoneLogin(trim($code)));
 
         if (($authorization['_'] ?? null) === 'account.password') {
@@ -111,7 +111,7 @@ class MadelineTelegram
     public function isAuthorized(int $apiId, string $apiHash): bool
     {
         try {
-            $api = $this->makeClient($apiId, $apiHash);
+            $api = $this->makeClient($apiId, $apiHash, false);
             $this->awaitIfNeeded($api->getSelf());
             return true;
         } catch (\Throwable) {
@@ -131,7 +131,7 @@ class MadelineTelegram
             throw new RuntimeException('The selected file is not available to the app.');
         }
 
-        $api = $this->makeClient($apiId, $apiHash);
+        $api = $this->makeClient($apiId, $apiHash, true);
         $this->awaitIfNeeded($api->sendDocument(
             peer: trim($peer),
             file: new LocalFile($filePath),
