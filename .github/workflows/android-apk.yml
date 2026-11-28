@@ -49,6 +49,15 @@ jobs:
           cp nativephp-app/app/Services/MadelineTelegram.php nativephp-build/app/Services/MadelineTelegram.php
           cp nativephp-app/resources/views/native/home.blade.php nativephp-build/resources/views/native/home.blade.php
 
+      - name: Align NativePHP runtime and UI versions
+        working-directory: nativephp-build
+        run: |
+          # The current starter template still constrains mobile-ui to 0.6.x.
+          # NativePHP 4.9's official upgrade path requires the matching 0.11.x UI package.
+          composer require nativephp/mobile:4.9.0 nativephp/mobile-ui:0.11.0 --no-interaction
+          composer show nativephp/mobile
+          composer show nativephp/mobile-ui
+
       - name: Install MadelineProto and document picker
         working-directory: nativephp-build
         run: |
