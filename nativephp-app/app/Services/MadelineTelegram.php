@@ -6,6 +6,7 @@ use danog\MadelineProto\API;
 use danog\MadelineProto\LocalFile;
 use danog\MadelineProto\Logger;
 use danog\MadelineProto\Settings;
+use danog\MadelineProto\WrappedFuture;
 use danog\MadelineProto\Stream\MTProtoTransport\HttpsStream;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
@@ -31,7 +32,10 @@ class MadelineTelegram
             ->setApiId($apiId)
             ->setApiHash(trim($apiHash));
         $settings->getConnection()
-            ->setProtocol(HttpsStream::class);
+            ->setProtocol(HttpsStream::class)
+            // Android networks may fail MadelineProto's built-in DoH lookup.
+            // Use the device's configured DNS resolver for this HTTPS test.
+            ->setUseDoH(false);
 
         // NativePHP's Android process may have a read-only working directory.
         // Never let MadelineProto fall back to ./MadelineProto.log.
@@ -50,7 +54,11 @@ class MadelineTelegram
      */
     private function awaitIfNeeded(mixed $result): mixed
     {
-        return $result instanceof \Amp\Future ? $result->await() : $result;
+        if ($result instanceof WrappedFuture || $result instanceof \Amp\Future) {
+            return $result->await();
+        }
+
+        return $result;
     }
 
     public function requestCode(int $apiId, string $apiHash, string $phone): void
