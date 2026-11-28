@@ -95,7 +95,7 @@ class Home extends NativeComponent
             app(MadelineTelegram::class)->requestCode((int) $this->apiId, $this->apiHash, $this->phone);
             $this->codeRequested = true;
             $this->status = 'Login code request submitted. Check Telegram for the code.';
-            $this->log('Phone login requested using HTTPS transport.');
+            $this->log('Phone login requested using direct TCP transport (DNS-free).');
         } catch (Throwable $exception) {
             $this->status = $exception->getMessage();
             $this->log('Login request failed: '.$exception->getMessage());
