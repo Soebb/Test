@@ -43,6 +43,7 @@
             <native:divider />
             <native:text class="font-semibold text-theme-on-surface">Log</native:text>
             <native:text class="text-xs text-theme-on-surface-variant">{{ $logText !== '' ? $logText : 'No activity yet.' }}</native:text>
+            <native:button class="w-full" @press="exportMadelineLog">Export MadelineProto log</native:button>
         </native:column>
 
         <native:text class="text-xs text-theme-on-surface-variant">This app uses MadelineProto with HTTPS transport. QR login is intentionally not included in this version.</native:text>
