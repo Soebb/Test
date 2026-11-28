@@ -69,4 +69,32 @@ SOURCE;
 
 $replaceOnce($mtprotoFile, $ipcNeedle, $ipcReplacement, 'MTProto IPC server guard');
 
+
+$loopsNeedle = <<<'SOURCE'
+        try {
+            $this->ipcServer->start();
+        } catch (Throwable $e) {
+            if (Magic::$isIpcWorker) {
+                throw $e;
+            }
+            $this->logger->logger("Error while starting IPC server: $e", Logger::FATAL_ERROR);
+        }
+SOURCE;
+
+$loopsReplacement = <<<'SOURCE'
+        // NativePHP runs MadelineProto in-process and intentionally has no IPC server.
+        if ($this->ipcServer !== null) {
+            try {
+                $this->ipcServer->start();
+            } catch (Throwable $e) {
+                if (Magic::$isIpcWorker) {
+                    throw $e;
+                }
+                $this->logger->logger("Error while starting IPC server: $e", Logger::FATAL_ERROR);
+            }
+        }
+SOURCE;
+
+$replaceOnce($mtprotoFile, $loopsNeedle, $loopsReplacement, 'MTProto startLoops IPC guard');
+
 echo 'Applied NativePHP in-process compatibility patch to MadelineProto '.API::RELEASE.PHP_EOL;
