@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-use danog\\MadelineProto\\API;
+use danog\MadelineProto\API;
 
 $apiFile = (new ReflectionClass(API::class))->getFileName();
-$mtprotoFile = (new ReflectionClass(danog\\MadelineProto\\MTProto::class))->getFileName();
+$mtprotoFile = (new ReflectionClass(danog\MadelineProto\MTProto::class))->getFileName();
 
 if (! is_string($apiFile) || ! is_file($apiFile) || ! is_string($mtprotoFile) || ! is_file($mtprotoFile)) {
     throw new RuntimeException('Could not locate MadelineProto source files for the NativePHP compatibility patch.');
