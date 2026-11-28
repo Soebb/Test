@@ -47,7 +47,25 @@ class MadelineTelegram
             ->setType(Logger::FILE_LOGGER)
             ->setExtra($logDirectory.DIRECTORY_SEPARATOR.'MadelineProto.log');
 
-        return new API($this->sessionPath(), $settings);
+        // PrimeModule's Python fallback copies helper scripts into getcwd().
+        // NativePHP may start with "/" as its process working directory, which
+        // is read-only on Android. Temporarily use the app's writable private
+        // directory while MadelineProto initializes its authorization key.
+        $runtimeDirectory = $logDirectory.DIRECTORY_SEPARATOR.'runtime';
+        File::ensureDirectoryExists($runtimeDirectory);
+        $previousDirectory = getcwd();
+
+        if (! @chdir($runtimeDirectory)) {
+            throw new RuntimeException('Could not switch to MadelineProto writable runtime directory.');
+        }
+
+        try {
+            return new API($this->sessionPath(), $settings);
+        } finally {
+            if ($previousDirectory !== false) {
+                @chdir($previousDirectory);
+            }
+        }
     }
 
     /**
