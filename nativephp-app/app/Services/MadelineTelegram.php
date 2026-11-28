@@ -4,6 +4,7 @@ namespace App\Services;
 
 use danog\MadelineProto\API;
 use danog\MadelineProto\LocalFile;
+use danog\MadelineProto\Logger;
 use danog\MadelineProto\Settings;
 use danog\MadelineProto\Stream\MTProtoTransport\HttpsStream;
 use Illuminate\Support\Facades\File;
@@ -32,18 +33,36 @@ class MadelineTelegram
         $settings->getConnection()
             ->setProtocol(HttpsStream::class);
 
+        // NativePHP's Android process may have a read-only working directory.
+        // Never let MadelineProto fall back to ./MadelineProto.log.
+        $logDirectory = storage_path('app/private/madeline');
+        File::ensureDirectoryExists($logDirectory);
+        $settings->getLogger()
+            ->setType(Logger::FILE_LOGGER)
+            ->setExtra($logDirectory.DIRECTORY_SEPARATOR.'MadelineProto.log');
+
         return new API($this->sessionPath(), $settings);
+    }
+
+    /**
+     * Await MadelineProto Amp futures inside the NativePHP action so network
+     * errors are caught instead of surfacing as UnhandledFutureError on destroy.
+     */
+    private function awaitIfNeeded(mixed $result): mixed
+    {
+        return $result instanceof \\Amp\\Future ? $result->await() : $result;
     }
 
     public function requestCode(int $apiId, string $apiHash, string $phone): void
     {
-        $this->makeClient($apiId, $apiHash)->phoneLogin(trim($phone));
+        $api = $this->makeClient($apiId, $apiHash);
+        $this->awaitIfNeeded($api->phoneLogin(trim($phone)));
     }
 
     public function completeCode(int $apiId, string $apiHash, string $code): array
     {
         $api = $this->makeClient($apiId, $apiHash);
-        $authorization = $api->completePhoneLogin(trim($code));
+        $authorization = $this->awaitIfNeeded($api->completePhoneLogin(trim($code)));
 
         if (($authorization['_'] ?? null) === 'account.password') {
             return ['authorized' => false, 'needs_2fa' => true];
@@ -59,7 +78,8 @@ class MadelineTelegram
     public function isAuthorized(int $apiId, string $apiHash): bool
     {
         try {
-            $this->makeClient($apiId, $apiHash)->getSelf();
+            $api = $this->makeClient($apiId, $apiHash);
+            $this->awaitIfNeeded($api->getSelf());
             return true;
         } catch (\Throwable) {
             return false;
@@ -79,12 +99,12 @@ class MadelineTelegram
         }
 
         $api = $this->makeClient($apiId, $apiHash);
-        $api->sendDocument(
+        $this->awaitIfNeeded($api->sendDocument(
             peer: trim($peer),
             file: new LocalFile($filePath),
             caption: $caption,
             callback: $progress,
             fileName: basename($filePath),
-        );
+        ));
     }
 }
